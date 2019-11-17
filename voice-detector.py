@@ -16,13 +16,14 @@ djv = Dejavu(config)
 def train():
   print "====================== Training ======================"
   print "Only supports WAV and MP3 sample files"
-  path = raw_input("Path of samples (e.g. test_audio\\): ")
+  path = raw_input("Path of samples (e.g. files//training//): ")
   djv.fingerprint_directory(path, [".mp3", ".wav"])
-  #djv.fingerprint_file(single_audio_file)  
+  #djv.fingerprint_file(single_audio_file)
   print "======================================================"
 
 def recognize():
   print "==================== Recognition ====================="
+  print "[KNOWN ISSUE] Using '\\' terminates the program"
   file = raw_input("File to recognize: ")
   song = djv.recognize(FileRecognizer, file)
   if song is None:

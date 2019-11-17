@@ -29,6 +29,7 @@ if song is None:
   print "Nothing recognized :(\n"
 else:
   print "We recognized %s\n" % (song)
+
 # Useful MySQL commands which could be used a lot soon
 # show databases;
 # use <db_name>;
