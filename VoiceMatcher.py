@@ -1,6 +1,7 @@
 import json
 import warnings
 import os.path
+import MySQLdb
 
 from dejavu import Dejavu
 from dejavu.recognize import FileRecognizer
@@ -16,7 +17,10 @@ class VoiceMatcher(object):
     self.choice = None
     self.config = None
     self.training_path = 'files/training'
-    self.options = {'a': self.train_model, 'b': self.recognize, 'c': self.delete_model, 'd':self.quit}
+    self.options = {'a': self.train_model,
+                    'b': self.recognize,
+                    'c': self.delete_model,
+                    'd':self.quit}
 
     self.read_config_file()
     if self.read_config_file_successful:
@@ -74,7 +78,16 @@ class VoiceMatcher(object):
       print "The application recognized you, %s!" % self.name
 
   def delete_model(self):
-    print "Delete"
+    print "Delete all fingerprints"
+    try:
+      dbconfig = self.config['database']
+      db = MySQLdb.connect(dbconfig['host'], dbconfig['user'], dbconfig['passwd'], dbconfig['db'])
+      cur = db.cursor()
+      cur.execute("delete from songs where song_id>0")
+      db.commit()
+      db.close()
+    except Exception:
+      print "Cannot connect to the MySQL DB."
 
   def quit(self):
     print "Please consider donating to continue this application."
