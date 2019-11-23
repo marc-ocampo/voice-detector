@@ -1,5 +1,11 @@
 #! /usr/bin/env python
 
+# Current limitations
+# - supports WAV and MP3 sample files
+# - Using '\' terminates the program
+# - training using mic not yet supported
+# - recognition using mic is not yet supported
+
 import warnings
 import json
 warnings.filterwarnings("ignore")
@@ -15,7 +21,6 @@ djv = Dejavu(config)
 
 def train():
   print "====================== Training ======================"
-  print "Only supports WAV and MP3 sample files"
   path = raw_input("Path of samples (e.g. files//training//): ")
   djv.fingerprint_directory(path, [".mp3", ".wav"])
   #djv.fingerprint_file(single_audio_file)
@@ -23,9 +28,9 @@ def train():
 
 def recognize():
   print "==================== Recognition ====================="
-  print "[KNOWN ISSUE] Using '\\' terminates the program"
   file = raw_input("File to recognize: ")
   song = djv.recognize(FileRecognizer, file)
+
   if song is None:
     print "Can't find in the database :(\n"
   else:
