@@ -14,8 +14,10 @@ from dejavu import Dejavu
 from dejavu.recognize import FileRecognizer
 
 # load config from a JSON file
-with open("config.SAMPLE") as f:
+
+with open("config.DEFAULT") as f:
   config = json.load(f)
+
 
 djv = Dejavu(config)
 

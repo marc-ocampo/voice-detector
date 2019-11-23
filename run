@@ -1,0 +1,11 @@
+#! /usr/bin/env python
+
+from VoiceMatcher import VoiceMatcher
+
+def start():
+  name = raw_input("What's your name? ")
+  app = VoiceMatcher(name)
+  app.run()
+
+if __name__ == '__main__':
+  start()

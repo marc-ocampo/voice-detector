@@ -12,7 +12,7 @@ from dejavu.recognize import FileRecognizer#, MicrophoneRecognizer
 #   database in config.SAMPLE is present
 
 # load config from a JSON file
-with open("config.SAMPLE") as f:
+with open("config.DEFAULT") as f:
   config = json.load(f)
 
 djv = Dejavu(config)
