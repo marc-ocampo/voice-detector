@@ -2,6 +2,7 @@ import json
 import warnings
 import os.path
 import MySQLdb
+import time
 
 from dejavu import Dejavu
 from dejavu.recognize import FileRecognizer
@@ -51,7 +52,11 @@ class VoiceMatcher(object):
 
   def train_model(self):
     print "Training voice models stored in /files/training/"
+    start_time = time.time()
     self.djv.fingerprint_directory(self.training_path, [".wav", ".mp3"])
+    end_time = time.time()
+    #t = timeit.Timer('self.djv.fingerprint_directory(self.training_path, [".wav", ".mp3"])')
+    print "Training took %f seconds" % (end_time - start_time)
 
   def recognize(self):
     print "Recognize from file"
