@@ -18,19 +18,19 @@ class VoiceMatcher(object):
     self.choice = None
     self.config = None
     self.training_path = 'files/training'
-    self.options = {'a': self.train_model,
-                    'b': self.recognize,
-                    'c': self.delete_model,
-                    'd':self.quit}
+    self.options = {'a': self.__train_model,
+                    'b': self.__recognize,
+                    'c': self.__delete_model,
+                    'd':self.__quit}
 
-    self.read_config_file()
+    self.__read_config_file()
     if self.read_config_file_successful:
       self.djv = Dejavu(self.config)
 
     print "Voice Matching Application -- make a better name?"
     print "Hello %s!" % name
 
-  def read_config_file(self):
+  def __read_config_file(self):
     try:
       f = open("config.DEFAULT")
       self.config = json.load(f)
@@ -44,28 +44,30 @@ class VoiceMatcher(object):
 
   def run(self):
     if self.read_config_file_successful:
-      while self.wants_to_continue():
-        self.ask_from_user()
-        self.assess_choice()
+      self.__run_the_loop()
     else:
       pass
 
-  def train_model(self):
+  def __run_the_loop(self):
+    while self.__wants_to_continue():
+      self.__ask_from_user()
+      self.__assess_choice()
+
+  def __train_model(self):
     print "Training voice models stored in /files/training/"
     start_time = time.time()
     self.djv.fingerprint_directory(self.training_path, [".wav", ".mp3"])
     end_time = time.time()
-    #t = timeit.Timer('self.djv.fingerprint_directory(self.training_path, [".wav", ".mp3"])')
     print "Training took %f seconds" % (end_time - start_time)
 
-  def recognize(self):
+  def __recognize(self):
     print "Recognize from file"
-    self.get_file_to_recognize_from_user()
+    self.__get_file_to_recognize_from_user()
 
     if self.file_to_recognize_is_valid :
-      self.recognize_voice()
+      self.__recognize_voice()
 
-  def get_file_to_recognize_from_user(self):
+  def __get_file_to_recognize_from_user(self):
     self.file = raw_input("File to recognize: ")
 
     if os.path.isfile(self.file):
@@ -73,46 +75,49 @@ class VoiceMatcher(object):
     else:
       self.file_to_recognize_is_valid = False
       print "Unable to find the file."
+      # known issue where '/' must be used in directories, unable to use '\'
+      print "[known issue] Please use '/' as directory delimiter."
 
-  def recognize_voice(self):
+  def __recognize_voice(self):
     search = self.djv.recognize(FileRecognizer, self.file)
 
     if search is None:
-      print "Unable to find in the database"
+      print "Unable to recognize the voice"
     else:
       print "The application recognized you, %s!" % self.name
 
-  def delete_model(self):
-    print "Delete all fingerprints"
+  def __delete_model(self):
+    dbconfig = self.config['database']
     try:
-      dbconfig = self.config['database']
       db = MySQLdb.connect(dbconfig['host'], dbconfig['user'], dbconfig['passwd'], dbconfig['db'])
       cur = db.cursor()
       cur.execute("delete from songs where song_id>0")
       db.commit()
       db.close()
+      print "Deleted all fingerprints."
+      print "[known issue] Please close the application to reflect the deletion in the storage."
+      # known issue where the application must be closed before the elements in the DB are actually deleted
     except Exception:
-      print "Cannot connect to the MySQL DB."
+      print "Unable to delete all fingerprints"
 
-  def quit(self):
+  def __quit(self):
     print "Please consider donating to continue this application."
 
-  def ask_from_user(self):
+  def __ask_from_user(self):
     print ""
     print "[a] Train a voice model"
     print "[b] Recognize voice"
-    print "[c] Delete voice model"
+    print "[c] Delete stored voice model"
     print "[d] Quit"
     self.choice = raw_input("Select your option: ")
     self.choice = self.choice.lower()
     print ""
 
-  def assess_choice(self):
+  def __assess_choice(self):
     try:
       self.options[self.choice]()
     except Exception:
-      pass
-#      print "Unexpected input \"%s\"from the user." % (self.choice)
+      pass # no need to show warnings
 
-  def wants_to_continue(self):
+  def __wants_to_continue(self):
     return 'd' != self.choice
