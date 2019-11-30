@@ -17,7 +17,7 @@ class VoiceMatcher(object):
     self.name = name
     self.choice = None
     self.config = None
-    self.training_path = 'files/training'
+    self.training_path = 'files/train'
     self.options = {'a': self.__train_model,
                     'b': self.__recognize,
                     'c': self.__delete_model,

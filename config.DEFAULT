@@ -1,8 +1,8 @@
 {
     "database": {
         "host": "localhost",
-        "user": "mocampo",
-        "passwd": "mocampo", 
+        "user": "root",
+        "passwd": "",
         "db": "dejavu"
     }
 }
