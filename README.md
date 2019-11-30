@@ -21,3 +21,5 @@ Refer to the [installation manual](https://github.com/worldveil/dejavu/blob/mast
 1. Configuration file `config.DEFAULT` has the correct information.
 2. MySQL DB is running with the DB that matches the configuration file.
 3. Call the `run` script.
+
+See the `files/CONTENTS.md` for the description of the default files used for training and recognition
