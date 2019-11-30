@@ -11,21 +11,26 @@ from dejavu.recognize import FileRecognizer
 
 warnings.filterwarnings("ignore") # warnings if DB is already populated
 
-# train from mic not yet supported
-# recognize from mic not yet supported
 class VoiceMatcher(object):
 
   def __init__(self, name):
+    # UI Parameters
     self.name = name
     self.choice = None
     self.config = None
-    self.recog_mic_count = 0
     self.training_path = 'files/train/'
     self.options = {'a': self.__train_model,
-                    'b': self.__recognize_from_file,
-                    'c': self.__recognize_from_mic,
-                    'd': self.__delete_model,
-                    'e':self.__quit}
+                    'b': self.__train_model_from_mic,
+                    'c': self.__recognize_from_file,
+                    'd': self.__recognize_from_mic,
+                    'e': self.__delete_model,
+                    'f':self.__quit}
+    # PyAudio parameters
+    self.format = pyaudio.paInt16
+    self.channels = 2
+    self.rate = 44100 # Mhz
+    self.chunk = 1024
+    self.record_length_s = 5
 
     self.__read_config_file()
     self.__word_art()
@@ -33,17 +38,18 @@ class VoiceMatcher(object):
 
   def __ask_from_user(self):
     print ""
-    print "[a] Train a voice model"
-    print "[b] Recognize voice from file"
-    print "[c] Recognize voice from mic"
-    print "[d] Delete stored voice model"
-    print "[e] Quit"
+    print "[a] Train voice models from file."
+    print "[b] Train voice model from mic. [NOT YET SUPPORTED]"
+    print "[c] Recognize voice from file."
+    print "[d] Recognize voice from mic. [NOT YET SUPPORTED]"
+    print "[e] Delete stored voice model."
+    print "[f] Quit."
     self.choice = raw_input("Select your option: ")
     self.choice = self.choice.lower()
     print ""
 
   def __wants_to_continue(self):
-    return 'e' != self.choice
+    return 'f' != self.choice
 
   def __assess_choice(self):
     try:
@@ -78,20 +84,26 @@ class VoiceMatcher(object):
       self.djv = Dejavu(self.config)
 
   def __train_model(self):
-    print "Training voice models stored in /files/training/"
+    print "Train from Stored Voice Models"
+    print "Training voice models stored in /files/training/."
     start_time = time.time()
     self.djv.fingerprint_directory(self.training_path, [".wav", ".mp3"])
     end_time = time.time()
     print "Training took %f seconds" % (end_time - start_time)
 
+  def __train_model_from_mic(self):
+    pass # not yet supported
+
   def __recognize_from_file(self):
-    print "Recognize from file"
+    print "Recognize from File"
     self.file = raw_input("File to recognize: ")
+    self.__recognize()
 
-    #self.__get_file_to_recognize_from_user()
-
+  def __recognize(self):
     if self.__check_recognition_file_validity() :
       self.__recognize_voice()
+    else:
+      print "Recognition file %s is invalid" % (self.file)
 
   def __check_recognition_file_validity(self):
     if os.path.isfile(self.file):
@@ -111,52 +123,44 @@ class VoiceMatcher(object):
       print "The application recognized you, %s!" % self.name
 
   def __recognize_from_mic(self):
+    self.file = "/tmp/temp.wav"
+    self.__record_using_mic()
+    self.__recognize()
 
-    FORMAT = pyaudio.paInt16
-    CHANNELS = 2
-    RATE = 44100
-    CHUNK = 1024
-    RECORD_SECONDS = 5
-    WAVE_OUTPUT_FILENAME = "file.wav"
+    # delete the temporary file
+    if os.path.isfile(self.file):
+      os.remove(self.file)
+    else:
+      pass
 
-    print "instance created"
+  def __record_using_mic(self):
     audio = pyaudio.PyAudio()
 
     # start Recording
-    stream = audio.open(format=FORMAT, channels=CHANNELS,
-                    rate=RATE, input=True,
-                    frames_per_buffer=CHUNK)
-    print "recording..."
+    stream = audio.open(format=self.format, channels=self.channels,
+                    rate=self.rate, input=True,
+                    frames_per_buffer=self.chunk)
+    print "Say your key phrase using the microphone."
     frames = []
 
-    for i in range(0, int(RATE / CHUNK * RECORD_SECONDS)):
-        data = stream.read(CHUNK)
+    for i in range(0, int(self.rate / self.chunk * self.record_length_s)):
+        data = stream.read(self.chunk)
         frames.append(data)
-    print "finished recording"
+    #print "finished recording"
 
     # stop Recording
     stream.stop_stream()
     stream.close()
     audio.terminate()
+    print "Voice model to recognize obtained from the user."
 
-    print "saving file"
-    waveFile = wave.open(WAVE_OUTPUT_FILENAME, 'wb')
-    waveFile.setnchannels(CHANNELS)
-    waveFile.setsampwidth(audio.get_sample_size(FORMAT))
-    waveFile.setframerate(RATE)
-    waveFile.writeframes(b''.join(frames))
-    waveFile.close()
-
-    # find the file
-    self.file = WAVE_OUTPUT_FILENAME;
-    if self.__check_recognition_file_validity() :
-      print 'checking validity'
-      self.__recognize_voice()
-    else:
-      print 'issue'
-    # delete the file
-
-    self.recog_mic_count += 1;
+    # Saving the file
+    temp_file = wave.open(self.file, 'wb')
+    temp_file.setnchannels(self.channels)
+    temp_file.setsampwidth(audio.get_sample_size(self.format))
+    temp_file.setframerate(self.rate)
+    temp_file.writeframes(b''.join(frames))
+    temp_file.close()
 
   def __delete_model(self):
     dbconfig = self.config['database']
