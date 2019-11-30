@@ -27,8 +27,21 @@ class VoiceMatcher(object):
     if self.read_config_file_successful:
       self.djv = Dejavu(self.config)
 
-    print "Voice Matching Application -- make a better name?"
+    self.__word_art()
     print "Hello %s!" % name
+
+  def __word_art(self):
+    """
+    Word art obtained from http://www.patorjk.com/software/taag/
+    """
+    print """
+     __      __   _            __  __       _       _
+     \ \    / /  (_)          |  \/  |     | |     | |
+      \ \  / /__  _  ___ ___  | \  / | __ _| |_ ___| |__   ___ _ __
+       \ \/ / _ \| |/ __/ _ \ | |\/| |/ _` | __/ __| '_ \ / _ \ '__|
+        \  / (_) | | (_|  __/ | |  | | (_| | || (__| | | |  __/ |
+         \/ \___/|_|\___\___| |_|  |_|\__,_|\__\___|_| |_|\___|_|
+    """
 
   def __read_config_file(self):
     try:
