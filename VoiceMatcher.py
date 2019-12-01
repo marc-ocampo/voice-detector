@@ -3,6 +3,7 @@ import warnings
 import os.path
 import MySQLdb
 import time
+import shutil
 import pyaudio
 import wave
 
@@ -18,8 +19,9 @@ class VoiceMatcher(object):
     self.name = name
     self.choice = None
     self.config = None
-    self.training_path = 'files/train/'
-    self.options = {'a': self.__train_model,
+    self.training_path_file = 'files/train/'
+    self.training_path_mic = '/tmp/train/'
+    self.options = {'a': self.__train_model_from_file,
                     'b': self.__train_model_from_mic,
                     'c': self.__recognize_from_file,
                     'd': self.__recognize_from_mic,
@@ -33,6 +35,7 @@ class VoiceMatcher(object):
     self.record_length_s = 5
 
     self.__read_config_file()
+    self.__create_folder_for_models_from_mic()
     self.__word_art()
     print "Hello %s!" % name
 
@@ -83,16 +86,25 @@ class VoiceMatcher(object):
     if self.read_config_file_successful:
       self.djv = Dejavu(self.config)
 
-  def __train_model(self):
-    print "Train from Stored Voice Models"
+  def __create_folder_for_models_from_mic(self):
+    if not os.path.exists(self.training_path_mic):
+      os.makedirs(self.training_path_mic)
+
+  def __remove_folder_for_models_from_mic(self):
+    if os.path.exists(self.training_path_mic):
+      shutil.rmtree(self.training_path_mic)
+
+  def __train_model_from_file(self):
+    print "Train Voice Models from Files"
     print "Training voice models stored in /files/training/."
     start_time = time.time()
-    self.djv.fingerprint_directory(self.training_path, [".wav", ".mp3"])
+    self.djv.fingerprint_directory(self.training_path_file, [".wav", ".mp3"])
     end_time = time.time()
     print "Training took %f seconds" % (end_time - start_time)
 
   def __train_model_from_mic(self):
-    pass # not yet supported
+    print "Train Voice Model from Mic"
+
 
   def __recognize_from_file(self):
     print "Recognize from File"
@@ -123,6 +135,7 @@ class VoiceMatcher(object):
       print "The application recognized you, %s!" % self.name
 
   def __recognize_from_mic(self):
+    print "Recognize from Mic"
     self.file = "/tmp/temp.wav"
     self.__record_using_mic()
     self.__recognize()
@@ -178,6 +191,7 @@ class VoiceMatcher(object):
 
   def __quit(self):
     print "Please consider donating to continue this application."
+    self.__remove_folder_for_models_from_mic() # for cleanup
 
   def __word_art(self):
     """
