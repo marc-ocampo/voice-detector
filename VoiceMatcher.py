@@ -102,10 +102,10 @@ class VoiceMatcher(object):
   def __train_model_from_file(self):
     print "Train Voice Models from Files"
     print "Training voice models stored in /files/training/."
-    start_time = time.time()
+    t = time.time()
     self.djv.fingerprint_directory(self.training_path_file, [".wav", ".mp3"])
-    end_time = time.time()
-    print "Training took %f seconds" % (end_time - start_time)
+    t = time.time() - t
+    print "Training took %f seconds" % (t)
 
   def __train_model_from_mic(self):
     print "Train Voice Model from Mic"
