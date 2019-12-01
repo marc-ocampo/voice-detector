@@ -4,8 +4,7 @@ from VoiceMatcher import VoiceMatcher
 
 def start():
   print "\n\n"
-  name = raw_input("What's your name? ")
-  app = VoiceMatcher(name)
+  app = VoiceMatcher()
   app.run()
 
 if __name__ == '__main__':

@@ -14,19 +14,22 @@ warnings.filterwarnings("ignore") # warnings if DB is already populated
 
 class VoiceMatcher(object):
 
-  def __init__(self, name):
+  def __init__(self):
     # UI Parameters
-    self.name = name
     self.choice = None
     self.config = None
-    self.training_path_file = 'files/train/'
-    self.training_path_mic = '/tmp/train/'
     self.options = {'a': self.__train_model_from_file,
                     'b': self.__train_model_from_mic,
                     'c': self.__recognize_from_file,
                     'd': self.__recognize_from_mic,
                     'e': self.__delete_model,
                     'f':self.__quit}
+
+    # Directory parameters
+    self.training_path_file = 'files/train/'
+    self.training_path_mic = '/tmp/train/'
+    self.training_from_mic_count = 0
+
     # PyAudio parameters
     self.format = pyaudio.paInt16
     self.channels = 2
@@ -37,14 +40,14 @@ class VoiceMatcher(object):
     self.__read_config_file()
     self.__create_folder_for_models_from_mic()
     self.__word_art()
-    print "Hello %s!" % name
+    print "Hello %s!" % self.name
 
   def __ask_from_user(self):
     print ""
     print "[a] Train voice models from file."
-    print "[b] Train voice model from mic. [NOT YET SUPPORTED]"
+    print "[b] Train voice model from mic."
     print "[c] Recognize voice from file."
-    print "[d] Recognize voice from mic. [NOT YET SUPPORTED]"
+    print "[d] Recognize voice from mic."
     print "[e] Delete stored voice model."
     print "[f] Quit."
     self.choice = raw_input("Select your option: ")
@@ -86,6 +89,8 @@ class VoiceMatcher(object):
     if self.read_config_file_successful:
       self.djv = Dejavu(self.config)
 
+    self.name = self.config['database']['user']
+
   def __create_folder_for_models_from_mic(self):
     if not os.path.exists(self.training_path_mic):
       os.makedirs(self.training_path_mic)
@@ -104,7 +109,10 @@ class VoiceMatcher(object):
 
   def __train_model_from_mic(self):
     print "Train Voice Model from Mic"
-
+    self.training_from_mic_count += 1
+    self.file = self.training_path_mic + self.name + str(self.training_from_mic_count) + '.wav'
+    self.__record_using_mic()
+    self.djv.fingerprint_directory(self.training_path_mic, [".wav", ".mp3"])
 
   def __recognize_from_file(self):
     print "Recognize from File"
@@ -153,6 +161,7 @@ class VoiceMatcher(object):
     stream = audio.open(format=self.format, channels=self.channels,
                     rate=self.rate, input=True,
                     frames_per_buffer=self.chunk)
+    print ""
     print "Say your key phrase using the microphone."
     frames = []
 
@@ -165,7 +174,7 @@ class VoiceMatcher(object):
     stream.stop_stream()
     stream.close()
     audio.terminate()
-    print "Voice model to recognize obtained from the user."
+    print "Voice model obtained from the user."
 
     # Saving the file
     temp_file = wave.open(self.file, 'wb')
