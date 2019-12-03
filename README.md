@@ -17,6 +17,9 @@ Refer to the [installation manual](https://github.com/worldveil/dejavu/blob/mast
  `apt-get install python-dev libmysqlclient-dev`
  `pip install MySQL-python`
 
+- After cloning the repository, pull the submodule
+ `git submodule update --init --recursive`
+
 ## Usage Notes
 1. Configuration file `config.DEFAULT` has the correct information.
 2. MySQL DB is running with the DB that matches the configuration file.
